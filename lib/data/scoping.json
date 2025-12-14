@@ -1,0 +1,88 @@
+{
+  "projects": [
+    {
+      "id": "1",
+      "projectName": "Global Enterprise SPM Rollout",
+      "client": "TechCorp Inc.",
+      "status": "in-progress",
+      "completionPercentage": 65,
+      "lastUpdated": "2024-12-04",
+      "owner": "Sarah Chen",
+      "summary": {
+        "projectVision": "Implement comprehensive SPM platform for 5000+ sales reps across 12 regions",
+        "targetGoLive": "Q2 2025",
+        "budgetRange": "$500K-$1M",
+        "riskTolerance": "medium"
+      },
+      "complexity": {
+        "dataIntegration": 4,
+        "salesPlanning": 5,
+        "compPlan": 4,
+        "bi": 3,
+        "changeManagement": 4,
+        "overall": "high"
+      },
+      "techStack": {
+        "crmSystem": "Salesforce",
+        "erpSystem": "SAP",
+        "hrisSystem": "Workday",
+        "dataPlatform": "Snowflake"
+      }
+    },
+    {
+      "id": "2",
+      "projectName": "ICM Quick Start",
+      "client": "RetailPro",
+      "status": "draft",
+      "completionPercentage": 25,
+      "lastUpdated": "2024-12-03",
+      "owner": "Marcus Johnson",
+      "summary": {
+        "projectVision": "Fast-track ICM implementation for 200 sales reps",
+        "targetGoLive": "Q1 2025",
+        "budgetRange": "$100K-$250K",
+        "riskTolerance": "low"
+      },
+      "complexity": {
+        "dataIntegration": 2,
+        "salesPlanning": 2,
+        "compPlan": 3,
+        "bi": 2,
+        "changeManagement": 2,
+        "overall": "medium"
+      },
+      "techStack": {
+        "crmSystem": "HubSpot",
+        "erpSystem": "NetSuite",
+        "hrisSystem": "BambooHR",
+        "dataPlatform": "AWS Redshift"
+      }
+    }
+  ],
+  "templates": [
+    {
+      "id": "t1",
+      "name": "Enterprise SPM - Full Stack",
+      "description": "Complete SPM implementation for large enterprises",
+      "estimatedDuration": "9-12 months",
+      "typicalBudget": "$500K-$2M",
+      "modules": ["Planning", "ICM", "BI", "Analytics"]
+    },
+    {
+      "id": "t2",
+      "name": "ICM Quick Start",
+      "description": "Rapid ICM deployment for mid-market",
+      "estimatedDuration": "3-6 months",
+      "typicalBudget": "$100K-$500K",
+      "modules": ["ICM", "Basic Reporting"]
+    },
+    {
+      "id": "t3",
+      "name": "Planning Module Only",
+      "description": "Territory and quota planning focused",
+      "estimatedDuration": "2-4 months",
+      "typicalBudget": "$75K-$250K",
+      "modules": ["Territory Planning", "Quota Management"]
+    }
+  ]
+}

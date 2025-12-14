@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* BHG Edge Theme - Rose/Revenue */
+  --color-primary: #db716d;
+  --color-accent: #65bc7b;
+  --color-accent-soft: #2D1B1A;
+  --color-accent-strong: #c25f5b;
+
+  /* Gradient for BHG branding */
+  --gradient-bhg: linear-gradient(135deg, #f97316 0%, #ec4899 100%);
+}
+
+body {
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  background-color: #f9fafb;
+  color: #111827;
+}
+
+@layer utilities {
+  .card {
+    @apply bg-white border border-gray-200 rounded-lg p-6 shadow-sm;
+  }
+
+  .btn-primary {
+    @apply px-4 py-2 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-lg font-medium hover:opacity-90 transition-opacity;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors;
+  }
+}

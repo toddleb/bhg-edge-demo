@@ -1,0 +1,207 @@
+{
+  "platforms": [
+    {
+      "id": "blog",
+      "name": "SPM Insights Blog",
+      "icon": "📈",
+      "color": "#f6c343",
+      "queue": {
+        "postsThisWeek": 3,
+        "nextSlot": "Tomorrow 10am",
+        "health": "on-track",
+        "notes": "Sales case studies, team wins, quarterly highlights"
+      }
+    },
+    {
+      "id": "podcast",
+      "name": "Sales Performance Voices",
+      "icon": "🎧",
+      "color": "#9b6dff",
+      "queue": {
+        "postsThisWeek": 1,
+        "nextSlot": "Friday 2pm",
+        "health": "at-risk",
+        "notes": "Need executive and industry expert guest confirmations"
+      }
+    },
+    {
+      "id": "youtube",
+      "name": "SPM TV",
+      "icon": "▶️",
+      "color": "#ff6b6b",
+      "queue": {
+        "postsThisWeek": 2,
+        "nextSlot": "Wed 3pm",
+        "health": "on-track",
+        "notes": "Project highlights and client success stories"
+      }
+    },
+    {
+      "id": "linkedin",
+      "name": "Leadership Insights",
+      "icon": "💼",
+      "color": "#3a7bd5",
+      "queue": {
+        "postsThisWeek": 6,
+        "nextSlot": "Today 5pm",
+        "health": "on-track",
+        "notes": "Executive perspectives on market strategy"
+      }
+    }
+  ],
+  "contentItems": [
+    {
+      "id": "1",
+      "title": "AI-Powered Customer Engagement Strategies",
+      "platform": "blog",
+      "type": "blog",
+      "owner": "Sarah Chen",
+      "publishDate": "2024-12-15",
+      "tags": ["Customers", "AI", "Engagement"],
+      "status": "scheduled",
+      "aiConfidence": 0.82,
+      "priority": "high"
+    },
+    {
+      "id": "2",
+      "title": "Deal Launch: New Team Services",
+      "platform": "linkedin",
+      "type": "post",
+      "owner": "Marcus Johnson",
+      "publishDate": "2024-12-14",
+      "tags": ["Deals", "Team"],
+      "status": "review",
+      "aiConfidence": 0.76,
+      "priority": "medium"
+    },
+    {
+      "id": "3",
+      "title": "Voices of Change: Sales Rep Impact Stories",
+      "platform": "podcast",
+      "type": "podcast",
+      "owner": "Alex Rivera",
+      "publishDate": "2024-12-18",
+      "tags": ["Sales Reps", "Impact"],
+      "status": "draft",
+      "aiConfidence": 0.68
+    },
+    {
+      "id": "4",
+      "title": "Sales Best Practices Workshop",
+      "platform": "youtube",
+      "type": "video",
+      "owner": "Jordan Lee",
+      "publishDate": "2024-12-16",
+      "tags": ["Sales", "Training"],
+      "status": "scheduled",
+      "aiConfidence": 0.91,
+      "priority": "high"
+    }
+  ],
+  "scheduleItems": [
+    {
+      "id": "s1",
+      "datetime": "2024-12-14T17:00:00",
+      "platform": "linkedin",
+      "topic": "New Deal Launch Announcement",
+      "status": "ready",
+      "owner": "Marcus Johnson"
+    },
+    {
+      "id": "s2",
+      "datetime": "2024-12-15T10:00:00",
+      "platform": "blog",
+      "topic": "Customer Engagement Best Practices",
+      "status": "ready",
+      "owner": "Sarah Chen"
+    },
+    {
+      "id": "s3",
+      "datetime": "2024-12-16T15:00:00",
+      "platform": "youtube",
+      "topic": "Sales Strategy Workshop",
+      "status": "ready",
+      "owner": "Jordan Lee"
+    }
+  ],
+  "ideaItems": [
+    {
+      "id": "i1",
+      "title": "Annual Gala 2025 Content Series",
+      "description": "Multi-part series covering event highlights, customer stories, and team impact",
+      "owner": "Sarah Chen",
+      "votes": 24,
+      "stage": "validated",
+      "platforms": ["blog", "youtube", "linkedin"]
+    },
+    {
+      "id": "i2",
+      "title": "Sales Rep Coordinator Toolkit",
+      "description": "Downloadable templates for sales rep onboarding, scheduling, and recognition",
+      "owner": "Marcus Johnson",
+      "votes": 18,
+      "stage": "discovery",
+      "platforms": ["blog"]
+    },
+    {
+      "id": "i3",
+      "title": "Donation Impact Calculator",
+      "description": "Interactive tool showing how donations translate into team deals",
+      "owner": "Jordan Lee",
+      "votes": 31,
+      "stage": "scheduled",
+      "platforms": ["blog", "youtube"]
+    }
+  ],
+  "teamRequests": [
+    {
+      "id": "r1",
+      "requester": "Lisa Wang",
+      "department": "Deals",
+      "topic": "Impact report templates for customers",
+      "format": "blog",
+      "urgency": "now",
+      "votes": 8,
+      "description": "Need templates and best practices for quarterly impact reports"
+    },
+    {
+      "id": "r2",
+      "requester": "David Brown",
+      "department": "Finance",
+      "topic": "Budget allocation explainer",
+      "format": "video",
+      "urgency": "soon",
+      "votes": 12,
+      "description": "Visual walkthrough of 2025 deal budget allocations"
+    }
+  ],
+  "topicTracks": [
+    {
+      "id": "t1",
+      "title": "Customer Engagement Intelligence",
+      "description": "AI-powered insights for customer behavior, giving patterns, and personalized outreach strategies",
+      "tags": ["Customers", "AI", "Engagement"],
+      "aiConfidence": 0.88,
+      "contentCount": 14,
+      "lastUpdated": "2024-12-13"
+    },
+    {
+      "id": "t2",
+      "title": "Deal Design + Impact Measurement",
+      "description": "Design tools, calculators, and templates for optimizing deal outcomes and team impact",
+      "tags": ["Deals", "Impact"],
+      "aiConfidence": 0.78,
+      "contentCount": 22,
+      "lastUpdated": "2024-12-12"
+    }
+  ],
+  "metrics": {
+    "readyToPublish": 24,
+    "activeRequests": 31,
+    "ideasValidated": 8,
+    "platformCoverage": {
+      "onTrack": 4,
+      "total": 6
+    }
+  }
+}

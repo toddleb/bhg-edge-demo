@@ -1,0 +1,84 @@
+{
+  "documents": [
+    {
+      "id": "1",
+      "type": "proposal",
+      "title": "SPM Implementation Proposal - TechCorp",
+      "client": "TechCorp Inc.",
+      "status": "in-review",
+      "value": 250000,
+      "lastModified": "2024-12-04",
+      "owner": "Sarah Chen",
+      "daysInStage": 3
+    },
+    {
+      "id": "2",
+      "type": "quote",
+      "title": "ICM Software Quote - RetailPro",
+      "client": "RetailPro",
+      "status": "draft",
+      "value": 180000,
+      "lastModified": "2024-12-03",
+      "owner": "Marcus Johnson",
+      "daysInStage": 7
+    },
+    {
+      "id": "3",
+      "type": "sow",
+      "title": "Statement of Work - FinanceMax",
+      "client": "FinanceMax Solutions",
+      "status": "approved",
+      "value": 320000,
+      "lastModified": "2024-11-28",
+      "owner": "Jordan Lee",
+      "daysInStage": 2
+    },
+    {
+      "id": "4",
+      "type": "proposal",
+      "title": "Enterprise SPM Platform - GlobalRetail",
+      "client": "GlobalRetail Corp",
+      "status": "sent",
+      "value": 450000,
+      "lastModified": "2024-12-01",
+      "owner": "Alex Rivera",
+      "daysInStage": 5
+    }
+  ],
+  "products": [
+    {
+      "id": "p1",
+      "name": "SPM Planning Suite",
+      "category": "Software",
+      "basePrice": 50000,
+      "description": "Territory planning, quota management, and forecast tools"
+    },
+    {
+      "id": "p2",
+      "name": "Incentive Compensation Management",
+      "category": "Software",
+      "basePrice": 75000,
+      "description": "Commission calculation, plan design, and analytics"
+    },
+    {
+      "id": "p3",
+      "name": "Implementation Services",
+      "category": "Services",
+      "basePrice": 120000,
+      "description": "Full deployment, configuration, and training"
+    },
+    {
+      "id": "p4",
+      "name": "Support & Maintenance",
+      "category": "Services",
+      "basePrice": 25000,
+      "description": "Annual support, updates, and maintenance"
+    }
+  ],
+  "metrics": {
+    "totalValue": 1200000,
+    "avgDealSize": 300000,
+    "activeProposals": 4,
+    "winRate": 0.68
+  }
+}
