@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   ExitIcon,
   PersonIcon,
@@ -71,12 +71,17 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const [selectedDepartment, setSelectedDepartment] = useState(0);
   const [isExpanded, setIsExpanded] = useState(true);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"sidebar" | "tiles">("sidebar");
   const [activeWorkflow, setActiveWorkflow] = useState<string[]>([]);
   const [currentWorkflowIndex, setCurrentWorkflowIndex] = useState(-1);
+
+  // Touch gesture state for swipe navigation
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
 
   // Load view mode preference from localStorage
   useEffect(() => {
@@ -102,6 +107,36 @@ export default function AppLayout({ children }: AppLayoutProps) {
     const newMode = viewMode === "sidebar" ? "tiles" : "sidebar";
     setViewMode(newMode);
     localStorage.setItem("bhg-view-mode", newMode);
+  };
+
+  // Touch gesture handlers for workflow navigation
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!isInWorkflow) return;
+
+    const swipeThreshold = 75; // minimum swipe distance in pixels
+    const swipeDistance = touchStart - touchEnd;
+
+    // Swiped left (next page)
+    if (swipeDistance > swipeThreshold && currentWorkflowIndex < activeWorkflow.length - 1) {
+      router.push(activeWorkflow[currentWorkflowIndex + 1]);
+    }
+
+    // Swiped right (previous page)
+    if (swipeDistance < -swipeThreshold && currentWorkflowIndex > 0) {
+      router.push(activeWorkflow[currentWorkflowIndex - 1]);
+    }
+
+    // Reset touch state
+    setTouchStart(0);
+    setTouchEnd(0);
   };
 
   // Determine which department tab should be active based on current path
@@ -427,7 +462,12 @@ export default function AppLayout({ children }: AppLayoutProps) {
         </div>
 
         {/* Full Width Page Content */}
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <div
+          className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           {children}
         </div>
       </div>
