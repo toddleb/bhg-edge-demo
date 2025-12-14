@@ -45,6 +45,8 @@ import {
   ArrowRightIcon,
   Share1Icon,
   DotFilledIcon,
+  LockClosedIcon,
+  LockOpen1Icon,
 } from "@radix-ui/react-icons";
 
 // Re-export for use in other components
@@ -94,6 +96,8 @@ export {
   ArrowRightIcon,
   Share1Icon,
   DotFilledIcon,
+  LockClosedIcon,
+  LockOpen1Icon,
 };
 
 // Map icon names to components for dynamic usage
