@@ -182,8 +182,11 @@ export default function AppLayout({ children }: AppLayoutProps) {
     );
   };
 
-  // If in tile view mode, render TileViewDashboard instead of traditional layout
-  if (viewMode === "tiles") {
+  // If in tile view mode and on a page (not the main dashboard), show traditional layout with back button
+  const isOnTileDashboard = pathname === "/dashboard" || pathname === "/";
+  const showTileView = viewMode === "tiles" && isOnTileDashboard;
+
+  if (showTileView) {
     return (
       <div className="min-h-screen bg-gray-50">
         {/* Simple Header for Tile View */}
@@ -354,15 +357,29 @@ export default function AppLayout({ children }: AppLayoutProps) {
             </div>
 
             <div className="flex items-center gap-3">
-              {/* View Mode Toggle */}
-              <button
-                onClick={toggleViewMode}
-                className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 rounded-lg hover:from-purple-200 hover:to-pink-200 transition-colors"
-                title="Switch to AI-adaptive tile view"
-              >
-                <DashboardIcon className="w-4 h-4" />
-                <span className="text-sm font-medium hidden md:block">AI Tiles</span>
-              </button>
+              {/* Back to Tile Dashboard button (only show if in tile view mode but not on dashboard) */}
+              {viewMode === "tiles" && !isOnTileDashboard && (
+                <Link
+                  href="/dashboard"
+                  className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-lg hover:opacity-90 transition-opacity no-underline"
+                  title="Back to tile dashboard"
+                >
+                  <DashboardIcon className="w-4 h-4" />
+                  <span className="text-sm font-medium hidden md:block">Back to Tiles</span>
+                </Link>
+              )}
+
+              {/* View Mode Toggle (only show on dashboard) */}
+              {isOnTileDashboard && (
+                <button
+                  onClick={toggleViewMode}
+                  className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 rounded-lg hover:from-purple-200 hover:to-pink-200 transition-colors"
+                  title="Switch to AI-adaptive tile view"
+                >
+                  <DashboardIcon className="w-4 h-4" />
+                  <span className="text-sm font-medium hidden md:block">AI Tiles</span>
+                </button>
+              )}
 
               <button
                 onClick={() => setIsDarkMode(!isDarkMode)}
