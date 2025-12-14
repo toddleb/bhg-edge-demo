@@ -75,6 +75,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"sidebar" | "tiles">("sidebar");
+  const [activeWorkflow, setActiveWorkflow] = useState<string[]>([]);
+  const [currentWorkflowIndex, setCurrentWorkflowIndex] = useState(-1);
 
   // Load view mode preference from localStorage
   useEffect(() => {
@@ -82,7 +84,18 @@ export default function AppLayout({ children }: AppLayoutProps) {
     if (stored === "tiles" || stored === "sidebar") {
       setViewMode(stored);
     }
-  }, []);
+
+    // Check for active workflow from sessionStorage
+    const workflowData = sessionStorage.getItem("bhg-active-workflow");
+    const currentPath = sessionStorage.getItem("bhg-workflow-current");
+
+    if (workflowData && currentPath) {
+      const workflow = JSON.parse(workflowData);
+      setActiveWorkflow(workflow);
+      const index = workflow.indexOf(pathname);
+      setCurrentWorkflowIndex(index);
+    }
+  }, [pathname]);
 
   // Save view mode preference
   const toggleViewMode = () => {
@@ -185,6 +198,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
   // If in tile view mode and on a page (not the main dashboard), show traditional layout with back button
   const isOnTileDashboard = pathname === "/dashboard" || pathname === "/";
   const showTileView = viewMode === "tiles" && isOnTileDashboard;
+  const isInWorkflow = activeWorkflow.length > 0 && currentWorkflowIndex >= 0;
+  const showFullWidth = viewMode === "tiles" && !isOnTileDashboard;
 
   if (showTileView) {
     return (
@@ -276,6 +291,145 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
         {/* Tile View Dashboard */}
         <TileViewDashboard />
+      </div>
+    );
+  }
+
+  // Full-width view for pages from dynamic dashboard
+  if (showFullWidth) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {/* Workflow Navigation Bar */}
+        {isInWorkflow && (
+          <div className="bg-purple-600 text-white px-4 py-3 shadow-lg">
+            <div className="max-w-7xl mx-auto flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-white text-purple-600 rounded-full flex items-center justify-center font-bold text-sm">
+                    {currentWorkflowIndex + 1}
+                  </div>
+                  <span className="font-medium">
+                    Step {currentWorkflowIndex + 1} of {activeWorkflow.length}
+                  </span>
+                </div>
+                {/* Previous/Next Navigation */}
+                <div className="flex items-center gap-2">
+                  {currentWorkflowIndex > 0 && (
+                    <Link
+                      href={activeWorkflow[currentWorkflowIndex - 1]}
+                      className="px-3 py-1 bg-white text-purple-600 rounded hover:bg-purple-100 transition-colors text-sm font-medium no-underline"
+                    >
+                      ← Previous
+                    </Link>
+                  )}
+                  {currentWorkflowIndex < activeWorkflow.length - 1 && (
+                    <Link
+                      href={activeWorkflow[currentWorkflowIndex + 1]}
+                      className="px-3 py-1 bg-white text-purple-600 rounded hover:bg-purple-100 transition-colors text-sm font-medium no-underline"
+                    >
+                      Next →
+                    </Link>
+                  )}
+                </div>
+              </div>
+              <Link
+                href="/dashboard"
+                className="px-3 py-1 bg-purple-700 hover:bg-purple-800 rounded transition-colors text-sm font-medium no-underline"
+              >
+                Exit Workflow
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Regular Header */}
+        <div className="bg-white px-4 py-3 border-b border-gray-200 shadow-sm">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-3 no-underline"
+              >
+                <div className="w-8 h-8 text-orange-500">
+                  {React.createElement(DashboardIcon, { className: "w-full h-full" })}
+                </div>
+                <div className="flex flex-col">
+                  <h2 className="text-lg font-bold bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">
+                    BHG Edge
+                  </h2>
+                  <p className="text-xs text-gray-500">Professional Services OS</p>
+                </div>
+              </Link>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-lg hover:opacity-90 transition-opacity no-underline"
+                title="Back to tile dashboard"
+              >
+                <DashboardIcon className="w-4 h-4" />
+                <span className="text-sm font-medium hidden md:block">Back to Tiles</span>
+              </Link>
+
+              <button
+                onClick={() => setIsDarkMode(!isDarkMode)}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+                aria-label="Toggle dark mode"
+              >
+                {isDarkMode ? (
+                  <SunIcon className="w-4 h-4" />
+                ) : (
+                  <MoonIcon className="w-4 h-4" />
+                )}
+              </button>
+
+              <div className="relative">
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center gap-3"
+                >
+                  <div className="hidden md:flex flex-col items-end">
+                    <p className="text-sm font-medium text-gray-800">Demo User</p>
+                    <p className="text-xs text-gray-500">Administrator</p>
+                  </div>
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-orange-500 to-pink-500 flex items-center justify-center text-white text-sm font-semibold">
+                    DU
+                  </div>
+                </button>
+
+                {isUserMenuOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-30"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    />
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-40">
+                      <button className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <PersonIcon className="w-4 h-4" />
+                        Profile
+                      </button>
+                      <button className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <GearIcon className="w-4 h-4" />
+                        Settings
+                      </button>
+                      <hr className="my-1 border-gray-200" />
+                      <button className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <ExitIcon className="w-4 h-4" />
+                        Logout
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Full Width Page Content */}
+        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+          {children}
+        </div>
       </div>
     );
   }
