@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { getIcon } from "@/components/icons";
-import { LightningBoltIcon, LockClosedIcon, LockOpen1Icon } from "@/components/icons";
+import { LightningBoltIcon, LockClosedIcon, LockOpen1Icon, Cross2Icon } from "@/components/icons";
 
 // Module metrics data
 const moduleMetrics: Record<string, { label: string; value: string; trend?: string }[]> = {
@@ -115,15 +115,20 @@ interface LockedState {
 }
 
 export default function TileViewDashboard() {
+  const router = useRouter();
   const pathname = usePathname();
   const [usageData, setUsageData] = useState<UsageData>({});
   const [lockedTiles, setLockedTiles] = useState<LockedState>({});
   const [isLoading, setIsLoading] = useState(true);
+  const [workflowMode, setWorkflowMode] = useState(false);
+  const [workflow, setWorkflow] = useState<string[]>([]);
+  const [focusedIndex, setFocusedIndex] = useState(0);
 
-  // Load usage data and locked state from localStorage
+  // Load usage data, locked state, and workflow from localStorage
   useEffect(() => {
     const storedUsage = localStorage.getItem("bhg-module-usage");
     const storedLocked = localStorage.getItem("bhg-locked-tiles");
+    const storedWorkflow = localStorage.getItem("bhg-workflow");
 
     if (storedUsage) {
       setUsageData(JSON.parse(storedUsage));
@@ -131,11 +136,51 @@ export default function TileViewDashboard() {
     if (storedLocked) {
       setLockedTiles(JSON.parse(storedLocked));
     }
+    if (storedWorkflow) {
+      setWorkflow(JSON.parse(storedWorkflow));
+    }
     setIsLoading(false);
   }, []);
 
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const cols = 4; // xl:grid-cols-4
+      const totalTiles = sortedModules.length;
+
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        setFocusedIndex((prev) => Math.min(prev + 1, totalTiles - 1));
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        setFocusedIndex((prev) => Math.max(prev - 1, 0));
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setFocusedIndex((prev) => Math.min(prev + cols, totalTiles - 1));
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setFocusedIndex((prev) => Math.max(prev - cols, 0));
+      } else if (e.key === "Enter" && sortedModules[focusedIndex]) {
+        e.preventDefault();
+        if (workflowMode) {
+          handleWorkflowToggle(sortedModules[focusedIndex].path);
+        } else {
+          handleTileClick(sortedModules[focusedIndex].path);
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [focusedIndex, workflowMode, workflow]);
+
   // Track module clicks
   const handleTileClick = (path: string) => {
+    if (workflowMode) {
+      handleWorkflowToggle(path);
+      return;
+    }
+
     // Track usage
     const newUsageData = {
       ...usageData,
@@ -143,6 +188,12 @@ export default function TileViewDashboard() {
     };
     setUsageData(newUsageData);
     localStorage.setItem("bhg-module-usage", JSON.stringify(newUsageData));
+
+    // Save workflow context for navigation
+    if (workflow.length > 0) {
+      sessionStorage.setItem("bhg-active-workflow", JSON.stringify(workflow));
+      sessionStorage.setItem("bhg-workflow-current", path);
+    }
   };
 
   // Toggle lock state
@@ -158,20 +209,44 @@ export default function TileViewDashboard() {
     localStorage.setItem("bhg-locked-tiles", JSON.stringify(newLockedState));
   };
 
+  // Toggle workflow mode
+  const toggleWorkflowMode = () => {
+    setWorkflowMode(!workflowMode);
+    if (workflowMode) {
+      // Exiting workflow mode
+      setWorkflow([]);
+      localStorage.removeItem("bhg-workflow");
+    }
+  };
+
+  // Add/remove from workflow
+  const handleWorkflowToggle = (path: string) => {
+    const index = workflow.indexOf(path);
+    let newWorkflow: string[];
+
+    if (index > -1) {
+      // Remove from workflow
+      newWorkflow = workflow.filter((p) => p !== path);
+    } else {
+      // Add to workflow
+      newWorkflow = [...workflow, path];
+    }
+
+    setWorkflow(newWorkflow);
+    localStorage.setItem("bhg-workflow", JSON.stringify(newWorkflow));
+  };
+
   // Sort modules: locked tiles maintain position, others sort by usage
   const sortedModules = React.useMemo(() => {
-    // Separate locked and unlocked tiles
     const locked = allModules.filter((m) => lockedTiles[m.path]);
     const unlocked = allModules.filter((m) => !lockedTiles[m.path]);
 
-    // Sort unlocked by usage
     const sortedUnlocked = unlocked.sort((a, b) => {
       const usageA = usageData[a.path] || 0;
       const usageB = usageData[b.path] || 0;
       return usageB - usageA;
     });
 
-    // Merge: locked tiles stay in their original order, unlocked fill in
     return [...locked, ...sortedUnlocked];
   }, [usageData, lockedTiles]);
 
@@ -186,139 +261,175 @@ export default function TileViewDashboard() {
   const lockedCount = Object.values(lockedTiles).filter(Boolean).length;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header with OpsChief Indicator */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">
-                BHG Edge
-              </h1>
-              <p className="text-gray-600 mt-1">Professional Services OS</p>
-            </div>
-            <div className="flex items-center gap-3 px-4 py-2 bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg border border-purple-200">
-              <LightningBoltIcon className="w-5 h-5 text-purple-600" />
-              <div className="text-sm">
-                <div className="font-semibold text-purple-900">OpsChief Active</div>
-                <div className="text-purple-700 text-xs">
-                  {lockedCount > 0 ? `${lockedCount} pinned • ` : ""}AI-optimizing workspace
-                </div>
-              </div>
+    <div className={`min-h-screen transition-colors duration-300 ${workflowMode ? "bg-purple-50" : "bg-gray-50"}`}>
+      {/* Compact Header with Instructions */}
+      <div className={`px-4 py-4 border-b shadow-sm transition-colors ${workflowMode ? "bg-purple-100 border-purple-200" : "bg-white border-gray-200"}`}>
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center">
+            <button
+              onClick={toggleWorkflowMode}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                workflowMode
+                  ? "bg-purple-600 text-white hover:bg-purple-700"
+                  : "bg-gradient-to-r from-orange-500 to-pink-500 text-white hover:opacity-90"
+              }`}
+            >
+              {workflowMode ? (
+                <>
+                  <Cross2Icon className="w-4 h-4" />
+                  Exit Workflow Mode
+                  {workflow.length > 0 && (
+                    <span className="ml-1 px-2 py-0.5 bg-white text-purple-600 rounded-full text-xs font-bold">
+                      {workflow.length}
+                    </span>
+                  )}
+                </>
+              ) : (
+                <>
+                  <LightningBoltIcon className="w-4 h-4" />
+                  Dynamic Dashboard
+                </>
+              )}
+            </button>
+            <div className="mt-2 text-xs text-gray-600">
+              {workflowMode ? (
+                <span className="text-purple-700 font-medium">
+                  <strong>Workflow Mode:</strong> Click tiles to build a sequence • Arrow keys to navigate • Enter to select
+                </span>
+              ) : (
+                <>
+                  <strong>Navigate:</strong> Arrow keys move • Enter opens •
+                  <strong className="ml-2">Actions:</strong> Click tiles to open • Pin icon locks position • Unlocked tiles auto-sort by usage
+                </>
+              )}
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Usage Stats */}
-        <div className="mb-6 p-4 bg-white border border-gray-200 rounded-lg">
-          <div className="text-sm text-gray-600">
-            <span className="font-semibold text-gray-900">Dynamic Dashboard:</span> Click tiles to navigate.
-            <span className="font-semibold text-purple-700 ml-1">Click the pin icon</span> in top-right to lock tiles in place.
-            Unlocked tiles auto-sort by usage.
-          </div>
-        </div>
-
-        {/* Module Tiles Grid */}
+      {/* Module Tiles Grid */}
+      <div className="max-w-7xl mx-auto p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {sortedModules.map((module, index) => {
             const Icon = getIcon(module.icon);
             const usage = usageData[module.path] || 0;
             const isActive = pathname === module.path;
             const isLocked = lockedTiles[module.path] || false;
+            const isFocused = index === focusedIndex;
+            const workflowIndex = workflow.indexOf(module.path);
+            const isInWorkflow = workflowIndex > -1;
             const gradient = departmentColors[module.department];
             const metrics = moduleMetrics[module.path] || [];
 
             return (
               <Link
                 key={module.path}
-                href={module.path}
-                onClick={() => handleTileClick(module.path)}
+                href={workflowMode ? "#" : module.path}
+                onClick={(e) => {
+                  if (workflowMode) {
+                    e.preventDefault();
+                    handleWorkflowToggle(module.path);
+                  } else {
+                    handleTileClick(module.path);
+                  }
+                }}
                 className={`
                   group relative bg-white border-2 rounded-xl p-5 hover:shadow-lg transition-all cursor-pointer no-underline block
                   ${isActive ? "border-orange-500 shadow-md" : "border-gray-200 hover:border-orange-300"}
                   ${isLocked ? "ring-2 ring-purple-300" : ""}
+                  ${isFocused ? "ring-4 ring-blue-400 scale-105" : ""}
+                  ${isInWorkflow ? "ring-4 ring-purple-500" : ""}
                 `}
               >
+                {/* Workflow Number Badge */}
+                {isInWorkflow && (
+                  <div className="absolute -top-2 -left-2 w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold text-sm shadow-lg z-10">
+                    {workflowIndex + 1}
+                  </div>
+                )}
+
                 {/* Pin/Unpin Button */}
-                <button
-                  onClick={(e) => toggleLock(module.path, e)}
-                  className={`
-                    absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center
-                    transition-all z-10
-                    ${isLocked
-                      ? "bg-purple-500 hover:bg-purple-600"
-                      : "bg-gray-200 hover:bg-gray-300 opacity-0 group-hover:opacity-100"
-                    }
-                  `}
-                  title={isLocked ? "Click to unpin" : "Click to pin in place"}
-                >
-                  {isLocked ? (
-                    <LockClosedIcon className="w-4 h-4 text-white" />
-                  ) : (
-                    <LockOpen1Icon className="w-4 h-4 text-gray-600" />
-                  )}
-                </button>
+                {!workflowMode && (
+                  <button
+                    onClick={(e) => toggleLock(module.path, e)}
+                    className={`
+                      absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center
+                      transition-all z-10
+                      ${isLocked
+                        ? "bg-purple-500 hover:bg-purple-600"
+                        : "bg-gray-200 hover:bg-gray-300 opacity-0 group-hover:opacity-100"
+                      }
+                    `}
+                    title={isLocked ? "Click to unpin" : "Click to pin in place"}
+                  >
+                    {isLocked ? (
+                      <LockClosedIcon className="w-4 h-4 text-white" />
+                    ) : (
+                      <LockOpen1Icon className="w-4 h-4 text-gray-600" />
+                    )}
+                  </button>
+                )}
 
                 {/* Pinned Badge (when locked) */}
-                {isLocked && (
+                {isLocked && !workflowMode && (
                   <div className="absolute top-2 left-2 px-2 py-1 bg-purple-500 rounded-full flex items-center gap-1">
                     <span className="text-xs font-bold text-white">Pinned</span>
                   </div>
                 )}
 
                 {/* Usage Rank Badge (when not locked) */}
-                {usage > 0 && !isLocked && (
+                {usage > 0 && !isLocked && !workflowMode && (
                   <div className="absolute top-12 right-2 flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-purple-100 to-pink-100 rounded-full">
                     <span className="text-xs font-bold text-purple-700">#{index + 1}</span>
                     <span className="text-xs text-purple-600">{usage} uses</span>
                   </div>
                 )}
 
-                  {/* AI Badge */}
-                  {module.badge === "AI" && (
-                    <div className={`absolute top-2 ${isLocked ? "left-20" : "left-2"} px-2 py-1 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full`}>
-                      <span className="text-xs font-bold text-white">AI</span>
-                    </div>
-                  )}
-
-                  {/* Icon */}
-                  <div className={`w-12 h-12 mb-3 rounded-lg bg-gradient-to-br ${gradient} p-2.5 text-white ${isLocked ? "mt-6" : ""}`}>
-                    {React.createElement(Icon, { className: "w-full h-full" })}
+                {/* AI Badge */}
+                {module.badge === "AI" && (
+                  <div className={`absolute top-2 ${isLocked ? "left-20" : "left-2"} px-2 py-1 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full`}>
+                    <span className="text-xs font-bold text-white">AI</span>
                   </div>
+                )}
 
-                  {/* Module Info */}
-                  <div className="mb-3">
-                    <h3 className="font-semibold text-gray-900 mb-1">{module.name}</h3>
-                    <p className="text-xs text-gray-600 mb-2">{module.description}</p>
-                    <div className="flex items-center gap-2">
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full bg-gradient-to-r ${gradient} bg-opacity-10`}>
-                        {module.department}
-                      </span>
-                    </div>
+                {/* Icon */}
+                <div className={`w-12 h-12 mb-3 rounded-lg bg-gradient-to-br ${gradient} p-2.5 text-white ${isLocked ? "mt-6" : ""}`}>
+                  {React.createElement(Icon, { className: "w-full h-full" })}
+                </div>
+
+                {/* Module Info */}
+                <div className="mb-3">
+                  <h3 className="font-semibold text-gray-900 mb-1">{module.name}</h3>
+                  <p className="text-xs text-gray-600 mb-2">{module.description}</p>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full bg-gradient-to-r ${gradient} bg-opacity-10`}>
+                      {module.department}
+                    </span>
                   </div>
+                </div>
 
-                  {/* Metrics */}
-                  {metrics.length > 0 && (
-                    <div className="border-t border-gray-200 pt-3 space-y-2">
-                      {metrics.map((metric, idx) => (
-                        <div key={idx} className="flex items-center justify-between">
-                          <span className="text-xs text-gray-600">{metric.label}</span>
-                          <div className="flex items-center gap-1">
-                            <span className="text-sm font-bold text-gray-900">{metric.value}</span>
-                            {metric.trend && (
-                              <span className={`text-xs ${
-                                metric.trend.startsWith('+') ? 'text-green-600' :
-                                metric.trend.startsWith('-') ? 'text-red-600' :
-                                'text-gray-500'
-                              }`}>
-                                {metric.trend}
-                              </span>
-                            )}
-                          </div>
+                {/* Metrics */}
+                {metrics.length > 0 && (
+                  <div className="border-t border-gray-200 pt-3 space-y-2">
+                    {metrics.map((metric, idx) => (
+                      <div key={idx} className="flex items-center justify-between">
+                        <span className="text-xs text-gray-600">{metric.label}</span>
+                        <div className="flex items-center gap-1">
+                          <span className="text-sm font-bold text-gray-900">{metric.value}</span>
+                          {metric.trend && (
+                            <span className={`text-xs ${
+                              metric.trend.startsWith('+') ? 'text-green-600' :
+                              metric.trend.startsWith('-') ? 'text-red-600' :
+                              'text-gray-500'
+                            }`}>
+                              {metric.trend}
+                            </span>
+                          )}
                         </div>
-                      ))}
-                    </div>
-                  )}
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* Hover Effect */}
                 <div className={`absolute inset-0 rounded-xl bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-5 transition-opacity pointer-events-none`} />
@@ -326,18 +437,6 @@ export default function TileViewDashboard() {
             );
           })}
         </div>
-
-        {/* Empty State */}
-        {Object.keys(usageData).length === 0 && lockedCount === 0 && (
-          <div className="mt-8 text-center p-8 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border border-purple-200">
-            <LightningBoltIcon className="w-12 h-12 text-purple-500 mx-auto mb-3" />
-            <h3 className="text-lg font-semibold text-purple-900 mb-2">OpsChief is Learning</h3>
-            <p className="text-sm text-purple-700 max-w-md mx-auto">
-              Start using modules and OpsChief AI will automatically optimize their order.
-              Click the pin icon to lock your favorites in place.
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );

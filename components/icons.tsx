@@ -47,6 +47,7 @@ import {
   DotFilledIcon,
   LockClosedIcon,
   LockOpen1Icon,
+  Cross2Icon,
 } from "@radix-ui/react-icons";
 
 // Re-export for use in other components
@@ -98,6 +99,7 @@ export {
   DotFilledIcon,
   LockClosedIcon,
   LockOpen1Icon,
+  Cross2Icon,
 };
 
 // Map icon names to components for dynamic usage
