@@ -119,7 +119,6 @@ export default function TileViewDashboard() {
   const [usageData, setUsageData] = useState<UsageData>({});
   const [lockedTiles, setLockedTiles] = useState<LockedState>({});
   const [isLoading, setIsLoading] = useState(true);
-  const pressTimerRef = useRef<Record<string, NodeJS.Timeout>>({});
 
   // Load usage data and locked state from localStorage
   useEffect(() => {
@@ -145,30 +144,11 @@ export default function TileViewDashboard() {
     localStorage.setItem("bhg-module-usage", JSON.stringify(newUsageData));
   };
 
-  // Handle press start (mouse down or touch start)
-  const handlePressStart = (path: string, e: React.MouseEvent | React.TouchEvent) => {
+  // Toggle lock state
+  const toggleLock = (path: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
-    // Start a timer for long press (800ms)
-    const timer = setTimeout(() => {
-      toggleLock(path);
-    }, 800);
-
-    pressTimerRef.current[path] = timer;
-  };
-
-  // Handle press end (mouse up or touch end)
-  const handlePressEnd = (path: string) => {
-    // Clear the timer if user releases before 800ms
-    if (pressTimerRef.current[path]) {
-      clearTimeout(pressTimerRef.current[path]);
-      delete pressTimerRef.current[path];
-    }
-  };
-
-  // Toggle lock state
-  const toggleLock = (path: string) => {
     const newLockedState = {
       ...lockedTiles,
       [path]: !lockedTiles[path],
@@ -232,7 +212,7 @@ export default function TileViewDashboard() {
         <div className="mb-6 p-4 bg-white border border-gray-200 rounded-lg">
           <div className="text-sm text-gray-600">
             <span className="font-semibold text-gray-900">Dynamic Dashboard:</span> Click tiles to navigate.
-            <span className="font-semibold text-purple-700 ml-1">Click and hold (800ms) to lock/unlock</span> tiles in place.
+            <span className="font-semibold text-purple-700 ml-1">Click the pin icon</span> in top-right to lock tiles in place.
             Unlocked tiles auto-sort by usage.
           </div>
         </div>
@@ -248,39 +228,50 @@ export default function TileViewDashboard() {
             const metrics = moduleMetrics[module.path] || [];
 
             return (
-              <div
+              <Link
                 key={module.path}
-                className="relative"
-                onMouseDown={(e) => handlePressStart(module.path, e)}
-                onMouseUp={() => handlePressEnd(module.path)}
-                onMouseLeave={() => handlePressEnd(module.path)}
-                onTouchStart={(e) => handlePressStart(module.path, e)}
-                onTouchEnd={() => handlePressEnd(module.path)}
+                href={module.path}
+                onClick={() => trackClick(module.path)}
+                className={`
+                  group relative bg-white border-2 rounded-xl p-5 hover:shadow-lg transition-all no-underline block
+                  ${isActive ? "border-orange-500 shadow-md" : "border-gray-200 hover:border-orange-300"}
+                  ${isLocked ? "ring-2 ring-purple-300" : ""}
+                `}
               >
-                <Link
-                  href={module.path}
-                  onClick={() => trackClick(module.path)}
+                {/* Pin/Unpin Button */}
+                <button
+                  onClick={(e) => toggleLock(module.path, e)}
                   className={`
-                    group relative bg-white border-2 rounded-xl p-5 hover:shadow-lg transition-all no-underline block
-                    ${isActive ? "border-orange-500 shadow-md" : "border-gray-200 hover:border-orange-300"}
-                    ${isLocked ? "ring-2 ring-purple-300" : ""}
+                    absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center
+                    transition-all z-10
+                    ${isLocked
+                      ? "bg-purple-500 hover:bg-purple-600"
+                      : "bg-gray-200 hover:bg-gray-300 opacity-0 group-hover:opacity-100"
+                    }
                   `}
+                  title={isLocked ? "Click to unpin" : "Click to pin in place"}
                 >
-                  {/* Lock Badge */}
-                  {isLocked && (
-                    <div className="absolute top-2 left-2 px-2 py-1 bg-purple-500 rounded-full flex items-center gap-1">
-                      <LockClosedIcon className="w-3 h-3 text-white" />
-                      <span className="text-xs font-bold text-white">Pinned</span>
-                    </div>
+                  {isLocked ? (
+                    <LockClosedIcon className="w-4 h-4 text-white" />
+                  ) : (
+                    <LockOpen1Icon className="w-4 h-4 text-gray-600" />
                   )}
+                </button>
 
-                  {/* Usage Rank Badge */}
-                  {usage > 0 && !isLocked && (
-                    <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-purple-100 to-pink-100 rounded-full">
-                      <span className="text-xs font-bold text-purple-700">#{index + 1}</span>
-                      <span className="text-xs text-purple-600">{usage} uses</span>
-                    </div>
-                  )}
+                {/* Pinned Badge (when locked) */}
+                {isLocked && (
+                  <div className="absolute top-2 left-2 px-2 py-1 bg-purple-500 rounded-full flex items-center gap-1">
+                    <span className="text-xs font-bold text-white">Pinned</span>
+                  </div>
+                )}
+
+                {/* Usage Rank Badge (when not locked) */}
+                {usage > 0 && !isLocked && (
+                  <div className="absolute top-12 right-2 flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-purple-100 to-pink-100 rounded-full">
+                    <span className="text-xs font-bold text-purple-700">#{index + 1}</span>
+                    <span className="text-xs text-purple-600">{usage} uses</span>
+                  </div>
+                )}
 
                   {/* AI Badge */}
                   {module.badge === "AI" && (
@@ -328,10 +319,9 @@ export default function TileViewDashboard() {
                     </div>
                   )}
 
-                  {/* Hover Effect */}
-                  <div className={`absolute inset-0 rounded-xl bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-5 transition-opacity pointer-events-none`} />
-                </Link>
-              </div>
+                {/* Hover Effect */}
+                <div className={`absolute inset-0 rounded-xl bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-5 transition-opacity pointer-events-none`} />
+              </Link>
             );
           })}
         </div>
@@ -343,7 +333,7 @@ export default function TileViewDashboard() {
             <h3 className="text-lg font-semibold text-purple-900 mb-2">OpsChief is Learning</h3>
             <p className="text-sm text-purple-700 max-w-md mx-auto">
               Start using modules and OpsChief AI will automatically optimize their order.
-              Click and hold any tile to pin it in place.
+              Click the pin icon to lock your favorites in place.
             </p>
           </div>
         )}
