@@ -42,7 +42,9 @@ import {
   BoxIcon,
   CheckboxIcon,
   ArrowLeftIcon,
+  ArrowRightIcon,
   Share1Icon,
+  DotFilledIcon,
 } from "@radix-ui/react-icons";
 
 // Re-export for use in other components
@@ -89,7 +91,9 @@ export {
   BoxIcon,
   CheckboxIcon,
   ArrowLeftIcon,
+  ArrowRightIcon,
   Share1Icon,
+  DotFilledIcon,
 };
 
 // Map icon names to components for dynamic usage

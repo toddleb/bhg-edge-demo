@@ -4,7 +4,14 @@ import { use } from "react";
 import Link from "next/link";
 import AppLayout from "@/components/AppLayout";
 import { bhgProjects } from "@/lib/demo-data";
-import { ArrowLeftIcon, CheckCircledIcon } from "@/components/icons";
+import {
+  ArrowLeftIcon,
+  CheckCircledIcon,
+  ActivityLogIcon,
+  DotFilledIcon,
+  StarIcon,
+} from "@/components/icons";
+import React from "react";
 
 export default function ProjectDetailPage({
   params,
@@ -33,10 +40,16 @@ export default function ProjectDetailPage({
     red: "bg-red-100 text-red-800",
   };
 
-  const statusIcons: Record<string, string> = {
-    complete: "✅",
-    "in-progress": "🔵",
-    pending: "⚪",
+  const statusIcons: Record<string, any> = {
+    complete: CheckCircledIcon,
+    "in-progress": ActivityLogIcon,
+    pending: DotFilledIcon,
+  };
+
+  const statusColors: Record<string, string> = {
+    complete: "text-green-600",
+    "in-progress": "text-blue-600",
+    pending: "text-gray-400",
   };
 
   return (
@@ -87,9 +100,14 @@ export default function ProjectDetailPage({
             Milestone Timeline
           </h2>
           <div className="space-y-4">
-            {project.milestones.map((milestone, index) => (
+            {project.milestones.map((milestone, index) => {
+              const StatusIcon = statusIcons[milestone.status];
+              const colorClass = statusColors[milestone.status];
+              return (
               <div key={index} className="flex items-start gap-4">
-                <div className="text-2xl">{statusIcons[milestone.status]}</div>
+                <div className={`w-6 h-6 ${colorClass}`}>
+                  {React.createElement(StatusIcon, { className: "w-full h-full" })}
+                </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
                     <h3 className="font-semibold text-gray-900">
@@ -104,7 +122,8 @@ export default function ProjectDetailPage({
                   </p>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -127,7 +146,7 @@ export default function ProjectDetailPage({
                 key={index}
                 className="flex items-center gap-3 p-3 bg-white rounded-lg"
               >
-                <span className="text-purple-600">✨</span>
+                <StarIcon className="w-5 h-5 text-purple-600" />
                 <span className="text-gray-700">{useCase}</span>
               </div>
             ))}

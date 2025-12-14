@@ -3,7 +3,15 @@
 import { useState } from "react";
 import AppLayout from "@/components/AppLayout";
 import { bhgAssets } from "@/lib/demo-data";
-import { MagnifyingGlassIcon } from "@/components/icons";
+import {
+  MagnifyingGlassIcon,
+  FileTextIcon,
+  BarChartIcon,
+  CubeIcon,
+  CheckboxIcon,
+  BookmarkIcon,
+} from "@/components/icons";
+import React from "react";
 
 export default function AssetsPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -18,12 +26,12 @@ export default function AssetsPage() {
     Deployment: "bg-orange-100 text-orange-800",
   };
 
-  const typeIcons: Record<string, string> = {
-    Template: "📄",
-    Deck: "📊",
-    Framework: "🏗️",
-    Checklist: "✅",
-    Playbook: "📖",
+  const typeIcons: Record<string, any> = {
+    Template: FileTextIcon,
+    Deck: BarChartIcon,
+    Framework: CubeIcon,
+    Checklist: CheckboxIcon,
+    Playbook: BookmarkIcon,
   };
 
   const filteredAssets = bhgAssets.filter((asset) => {
@@ -81,7 +89,9 @@ export default function AssetsPage() {
               className="card hover:shadow-lg transition-shadow cursor-pointer"
             >
               <div className="flex items-start gap-3 mb-3">
-                <span className="text-3xl">{typeIcons[asset.type]}</span>
+                <div className="w-8 h-8 text-orange-500">
+                  {React.createElement(typeIcons[asset.type], { className: "w-full h-full" })}
+                </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900 mb-1">
                     {asset.name}

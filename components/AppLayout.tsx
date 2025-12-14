@@ -11,8 +11,11 @@ import {
   Cross1Icon,
   MoonIcon,
   SunIcon,
+  DashboardIcon,
+  TableIcon,
 } from "@/components/icons";
 import { getIcon } from "@/components/icons";
+import TileViewDashboard from "@/components/TileViewDashboard";
 
 // Hardcoded BHG departments (from bhg.json)
 const departments = [
@@ -71,6 +74,22 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const [selectedDepartment, setSelectedDepartment] = useState(0);
   const [isExpanded, setIsExpanded] = useState(true);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"sidebar" | "tiles">("sidebar");
+
+  // Load view mode preference from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem("bhg-view-mode");
+    if (stored === "tiles" || stored === "sidebar") {
+      setViewMode(stored);
+    }
+  }, []);
+
+  // Save view mode preference
+  const toggleViewMode = () => {
+    const newMode = viewMode === "sidebar" ? "tiles" : "sidebar";
+    setViewMode(newMode);
+    localStorage.setItem("bhg-view-mode", newMode);
+  };
 
   // Determine which department tab should be active based on current path
   useEffect(() => {
@@ -163,6 +182,102 @@ export default function AppLayout({ children }: AppLayoutProps) {
     );
   };
 
+  // If in tile view mode, render TileViewDashboard instead of traditional layout
+  if (viewMode === "tiles") {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {/* Simple Header for Tile View */}
+        <div className="bg-white px-4 py-3 border-b border-gray-200 shadow-sm">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-3 no-underline"
+              >
+                <div className="w-8 h-8 text-orange-500">
+                  {React.createElement(DashboardIcon, { className: "w-full h-full" })}
+                </div>
+                <div className="flex flex-col">
+                  <h2 className="text-lg font-bold bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">
+                    BHG Edge
+                  </h2>
+                  <p className="text-xs text-gray-500">Professional Services OS</p>
+                </div>
+              </Link>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {/* View Mode Toggle */}
+              <button
+                onClick={toggleViewMode}
+                className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 rounded-lg hover:from-purple-200 hover:to-pink-200 transition-colors"
+                title="Switch to traditional navigation"
+              >
+                <TableIcon className="w-4 h-4" />
+                <span className="text-sm font-medium hidden md:block">Traditional Nav</span>
+              </button>
+
+              <button
+                onClick={() => setIsDarkMode(!isDarkMode)}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+                aria-label="Toggle dark mode"
+              >
+                {isDarkMode ? (
+                  <SunIcon className="w-4 h-4" />
+                ) : (
+                  <MoonIcon className="w-4 h-4" />
+                )}
+              </button>
+
+              <div className="relative">
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center gap-3"
+                >
+                  <div className="hidden md:flex flex-col items-end">
+                    <p className="text-sm font-medium text-gray-800">Demo User</p>
+                    <p className="text-xs text-gray-500">Administrator</p>
+                  </div>
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-orange-500 to-pink-500 flex items-center justify-center text-white text-sm font-semibold">
+                    DU
+                  </div>
+                </button>
+
+                {isUserMenuOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-30"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    />
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-40">
+                      <button className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <PersonIcon className="w-4 h-4" />
+                        Profile
+                      </button>
+                      <button className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <GearIcon className="w-4 h-4" />
+                        Settings
+                      </button>
+                      <hr className="my-1 border-gray-200" />
+                      <button className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <ExitIcon className="w-4 h-4" />
+                        Logout
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Tile View Dashboard */}
+        <TileViewDashboard />
+      </div>
+    );
+  }
+
+  // Traditional sidebar view
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Desktop Sidebar */}
@@ -239,6 +354,16 @@ export default function AppLayout({ children }: AppLayoutProps) {
             </div>
 
             <div className="flex items-center gap-3">
+              {/* View Mode Toggle */}
+              <button
+                onClick={toggleViewMode}
+                className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 rounded-lg hover:from-purple-200 hover:to-pink-200 transition-colors"
+                title="Switch to AI-adaptive tile view"
+              >
+                <DashboardIcon className="w-4 h-4" />
+                <span className="text-sm font-medium hidden md:block">AI Tiles</span>
+              </button>
+
               <button
                 onClick={() => setIsDarkMode(!isDarkMode)}
                 className="p-2 hover:bg-gray-100 rounded-lg"

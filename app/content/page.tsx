@@ -8,7 +8,11 @@ import {
   ArrowUpIcon,
   EyeOpenIcon,
   CopyIcon,
+  TableIcon,
+  DesktopIcon,
+  Pencil1Icon,
 } from "@/components/icons";
+import React from "react";
 
 // Mock content library data
 const contentData = {
@@ -172,11 +176,11 @@ export default function ContentPage() {
     Tool: "bg-yellow-100 text-yellow-800",
   };
 
-  const formatIcons = {
-    PDF: "📄",
-    Excel: "📊",
-    PowerPoint: "📽️",
-    Word: "📝",
+  const formatIcons: Record<string, any> = {
+    PDF: FileTextIcon,
+    Excel: TableIcon,
+    PowerPoint: DesktopIcon,
+    Word: Pencil1Icon,
   };
 
   return (
@@ -315,8 +319,8 @@ export default function ContentPage() {
                 className="p-4 border border-gray-200 rounded-lg hover:border-orange-300 hover:shadow-md transition-all"
               >
                 <div className="flex items-start gap-3 mb-3">
-                  <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-orange-100 to-pink-100 rounded-lg flex items-center justify-center text-2xl">
-                    {formatIcons[asset.format as keyof typeof formatIcons]}
+                  <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-orange-100 to-pink-100 rounded-lg flex items-center justify-center text-orange-600">
+                    {React.createElement(formatIcons[asset.format as keyof typeof formatIcons], { className: "w-6 h-6" })}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-gray-900 truncate">

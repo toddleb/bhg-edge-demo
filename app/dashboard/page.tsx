@@ -1,20 +1,55 @@
 "use client";
 
+import Link from "next/link";
 import AppLayout from "@/components/AppLayout";
 import { bhg6PData } from "@/lib/demo-data";
+import {
+  PersonIcon,
+  ActivityLogIcon,
+  BoxIcon,
+  BarChartIcon,
+  TargetIcon,
+  GearIcon,
+  BookmarkIcon,
+  CheckCircledIcon,
+  ArrowRightIcon,
+} from "@/components/icons";
+import React from "react";
 
-const SixPTile = ({ data }: { data: any }) => (
-  <div className="bg-white border border-gray-200 rounded-lg p-6 h-full hover:shadow-md transition-shadow">
-    <div className="flex flex-col gap-4 h-full">
-      <div className="flex items-start gap-3">
-        <div className="text-3xl">{getIcon(data.title)}</div>
-        <div className="flex flex-col flex-1">
-          <h3 className="text-xl font-semibold text-gray-900">
-            {data.title}
-          </h3>
-          <p className="text-sm text-gray-600">{data.description}</p>
+// Map 6P titles to their detail page paths
+const sixPPagePaths: Record<string, string> = {
+  "People": "/team",
+  "Process": "/process",
+  "Products/Programs": "/products",
+  "Performance": "/performance",
+  "Pipeline": "/pipeline",
+  "Platform": "/it-systems",
+};
+
+const SixPTile = ({ data }: { data: any }) => {
+  const Icon = getIcon(data.title);
+  const detailPath = sixPPagePaths[data.title] || "/dashboard";
+
+  return (
+    <Link
+      href={detailPath}
+      className="bg-white border border-gray-200 rounded-lg p-6 h-full hover:shadow-lg hover:border-orange-300 transition-all group no-underline"
+    >
+      <div className="flex flex-col gap-4 h-full">
+        <div className="flex items-start gap-3">
+          <div className="w-8 h-8 text-orange-500">
+            {React.createElement(Icon, { className: "w-full h-full" })}
+          </div>
+          <div className="flex flex-col flex-1">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-semibold text-gray-900">
+                {data.title}
+              </h3>
+              <ArrowRightIcon className="w-5 h-5 text-gray-400 group-hover:text-orange-500 group-hover:translate-x-1 transition-all" />
+            </div>
+            <p className="text-sm text-gray-600">{data.description}</p>
+          </div>
         </div>
-      </div>
 
       <div className="border-t border-gray-200"></div>
 
@@ -39,8 +74,9 @@ const SixPTile = ({ data }: { data: any }) => (
         )}
 
         {data.offerings && data.offerings.map((offering: string, i: number) => (
-          <p key={i} className="text-sm text-gray-700">
-            ✓ {offering}
+          <p key={i} className="text-sm text-gray-700 flex items-center gap-2">
+            <CheckCircledIcon className="w-4 h-4 text-green-600" />
+            {offering}
           </p>
         ))}
 
@@ -51,25 +87,27 @@ const SixPTile = ({ data }: { data: any }) => (
         ))}
 
         {data.tools && data.tools.map((tool: string, i: number) => (
-          <p key={i} className="text-sm text-gray-700">
-            🔧 {tool}
+          <p key={i} className="text-sm text-gray-700 flex items-center gap-2">
+            <GearIcon className="w-4 h-4 text-gray-600" />
+            {tool}
           </p>
         ))}
       </div>
     </div>
-  </div>
-);
+    </Link>
+  );
+};
 
 function getIcon(title: string) {
-  const icons: Record<string, string> = {
-    "People": "👥",
-    "Process": "🔄",
-    "Products/Programs": "📦",
-    "Performance": "📊",
-    "Pipeline": "🎯",
-    "Platform": "🛠️",
+  const icons: Record<string, any> = {
+    "People": PersonIcon,
+    "Process": ActivityLogIcon,
+    "Products/Programs": BoxIcon,
+    "Performance": BarChartIcon,
+    "Pipeline": TargetIcon,
+    "Platform": GearIcon,
   };
-  return icons[title] || "📌";
+  return icons[title] || BookmarkIcon;
 }
 
 export default function DashboardPage() {
