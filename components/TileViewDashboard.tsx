@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { getIcon } from "@/components/icons";
 import { LightningBoltIcon, LockClosedIcon, LockOpen1Icon } from "@/components/icons";
 
@@ -115,6 +114,7 @@ interface LockedState {
 }
 
 export default function TileViewDashboard() {
+  const router = useRouter();
   const pathname = usePathname();
   const [usageData, setUsageData] = useState<UsageData>({});
   const [lockedTiles, setLockedTiles] = useState<LockedState>({});
@@ -134,14 +134,18 @@ export default function TileViewDashboard() {
     setIsLoading(false);
   }, []);
 
-  // Track module clicks
-  const trackClick = (path: string) => {
+  // Track module clicks and navigate
+  const handleTileClick = (path: string) => {
+    // Track usage
     const newUsageData = {
       ...usageData,
       [path]: (usageData[path] || 0) + 1,
     };
     setUsageData(newUsageData);
     localStorage.setItem("bhg-module-usage", JSON.stringify(newUsageData));
+
+    // Navigate to the page
+    router.push(path);
   };
 
   // Toggle lock state
@@ -228,12 +232,11 @@ export default function TileViewDashboard() {
             const metrics = moduleMetrics[module.path] || [];
 
             return (
-              <Link
+              <div
                 key={module.path}
-                href={module.path}
-                onClick={() => trackClick(module.path)}
+                onClick={() => handleTileClick(module.path)}
                 className={`
-                  group relative bg-white border-2 rounded-xl p-5 hover:shadow-lg transition-all no-underline block
+                  group relative bg-white border-2 rounded-xl p-5 hover:shadow-lg transition-all cursor-pointer
                   ${isActive ? "border-orange-500 shadow-md" : "border-gray-200 hover:border-orange-300"}
                   ${isLocked ? "ring-2 ring-purple-300" : ""}
                 `}
@@ -321,7 +324,7 @@ export default function TileViewDashboard() {
 
                 {/* Hover Effect */}
                 <div className={`absolute inset-0 rounded-xl bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-5 transition-opacity pointer-events-none`} />
-              </Link>
+              </div>
             );
           })}
         </div>
